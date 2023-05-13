@@ -1,12 +1,15 @@
 package com.trybe.conversorcsv;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.Buffer;
-import java.util.Arrays;
 
+/**
+ * Classe Conversor.
+ */
 public class Conversor {
 
   /**
@@ -22,10 +25,17 @@ public class Conversor {
     new Conversor().converterPasta(pastaDeEntradas, pastaDeSaidas);
   }
 
-  private void fecharAquivo(FileReader fileReader, BufferedReader bufferedReader) {
+  private void fecharAquivo(
+      FileReader fileReader,
+      FileWriter fileWriter, 
+      BufferedReader bufferedReader,  
+      BufferedWriter bufferedWriter
+  ) {
     try {
       fileReader.close();
+      fileWriter.close();
       bufferedReader.close();
+      bufferedWriter.close();
     } catch (Exception error) {
       error.printStackTrace();
     }
@@ -50,7 +60,6 @@ public class Conversor {
     return novoCpf;
   }
 
-
   private String manipulaLinha(String linha) {
     String[] novaLinha = linha.split(","); 
     String nome = novaLinha[0].toUpperCase();
@@ -58,34 +67,7 @@ public class Conversor {
     String email = novaLinha[2];
     String cpf = this.formataCpf(novaLinha[3]);
 
-    return String.format("%s,%s,%s,%s", nome, data, email, cpf);
-  }
-
-  private void leArquivo(File pastaDeEntradas) {
-    if (pastaDeEntradas.isDirectory() && pastaDeEntradas.canRead()) {
-      for (File arquivo : pastaDeEntradas.listFiles()) {
-        FileReader fileReader = null;
-        BufferedReader bufferedReader = null;
-        
-        try {
-          fileReader = new FileReader(arquivo);
-          bufferedReader = new BufferedReader(fileReader);
-          String linha = bufferedReader.readLine();
-          
-          while (linha != null) {
-            if (!linha.contains("Nome")) {
-              String novaLinha = this.manipulaLinha(linha);
-            }
-
-            linha = bufferedReader.readLine();
-          }
-        } catch (IOException error) {
-          error.printStackTrace();
-        } finally {
-          this.fecharAquivo(fileReader, bufferedReader);
-        }
-      }
-    }
+    return String.format("%s,%s,%s,%s\n", nome, data, email, cpf);
   }
 
   /**
@@ -100,8 +82,40 @@ public class Conversor {
    *                     gravar os arquivos de saída.
    */
   public void converterPasta(File pastaDeEntradas, File pastaDeSaidas) throws IOException {
-    this.leArquivo(pastaDeEntradas);
-    
-    
+    if (pastaDeEntradas.isDirectory() && pastaDeEntradas.canRead()) {
+      for (File arquivo : pastaDeEntradas.listFiles()) {
+        FileReader fileReader = null;
+        FileWriter fileWriter = null;
+        BufferedReader bufferedReader = null;
+        BufferedWriter bufferedWriter = null;
+
+
+        try {
+          fileReader = new FileReader(arquivo);
+          fileWriter = new FileWriter("./saidas/" + arquivo.getName());
+          bufferedReader = new BufferedReader(fileReader);
+          bufferedWriter = new BufferedWriter(fileWriter);
+
+          String linha = bufferedReader.readLine();
+          pastaDeSaidas.mkdirs();
+          
+          while (linha != null) {
+            if (!linha.contains("Nome")) {
+              String novaLinha = this.manipulaLinha(linha);
+              bufferedWriter.write(novaLinha);
+            } else {
+              bufferedWriter.write(linha + "\n");
+            }
+            
+            bufferedWriter.flush();
+            linha = bufferedReader.readLine();
+          }
+        } catch (IOException error) {
+          error.printStackTrace();
+        } finally {
+          this.fecharAquivo(fileReader, fileWriter, bufferedReader, bufferedWriter);
+        }
+      }
+    }
   }
 }
