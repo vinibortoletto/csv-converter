@@ -47,6 +47,7 @@ public class Conversor {
     String mes = dataDividida[1];
     String ano = dataDividida[2];
     String novaData = String.format("%s-%s-%s", ano, mes, dia); 
+    
     return novaData;
   }
 
@@ -89,15 +90,15 @@ public class Conversor {
         BufferedReader bufferedReader = null;
         BufferedWriter bufferedWriter = null;
 
-
         try {
+          pastaDeSaidas.mkdirs();
+
           fileReader = new FileReader(arquivo);
-          fileWriter = new FileWriter("./saidas/" + arquivo.getName());
+          fileWriter = new FileWriter(pastaDeSaidas.getPath() + "/" + arquivo.getName());
           bufferedReader = new BufferedReader(fileReader);
           bufferedWriter = new BufferedWriter(fileWriter);
 
           String linha = bufferedReader.readLine();
-          pastaDeSaidas.mkdirs();
           
           while (linha != null) {
             if (!linha.contains("Nome")) {
